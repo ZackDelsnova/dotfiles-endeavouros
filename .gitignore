@@ -7,7 +7,11 @@
 .DS_Store
 Thumbs.db
 
+# hyprland
+.hyprland-*
+
 # nested git repos
+**/.git/
 
 # neovim cache & plugins
 nvim/.config/nvim/.lazy/
@@ -20,6 +24,11 @@ nvim/.config/nvim/.undo/
 # matugen cache
 .cache/matugen
 
+# quickshell cache
+*.qmlc
+*.jsc
+quickshell/*/qmlcache/
+
 # system assets
 assets/sddm/
 assets/grub/
@@ -28,4 +37,9 @@ assets/grub/
 temp/
 test/
 *.tmp
+
+# for safety
+*.env
+*.secret
+*.key
 
