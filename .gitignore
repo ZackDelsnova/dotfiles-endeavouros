@@ -1,0 +1,31 @@
+# system/backups
+*.swp
+*.swo
+*.bak
+*~
+*.log
+.DS_Store
+Thumbs.db
+
+# nested git repos
+
+# neovim cache & plugins
+nvim/.config/nvim/.lazy/
+nvim/.config/nvim/lazy-lock.json
+nvim/.config/nvim/.mason/
+nvim/.config/nvim/.backup/
+nvim/.config/nvim/.swap/
+nvim/.config/nvim/.undo/
+
+# matugen cache
+.cache/matugen
+
+# system assets
+assets/sddm/
+assets/grub/
+
+# temp
+temp/
+test/
+*.tmp
+
