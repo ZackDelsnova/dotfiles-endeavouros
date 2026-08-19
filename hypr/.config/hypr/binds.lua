@@ -11,6 +11,9 @@ hl.bind(
 	hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")
 )
 
+-- lock
+hl.bind(mod .. " + N", hl.dsp.exec_cmd("hyprlock"), { release = true }) -- SUPER+L locks
+
 -- apps
 hl.bind(mod .. " + Return", hl.dsp.exec_cmd("kitty"))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("thunar"))

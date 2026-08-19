@@ -1,0 +1,39 @@
+* {
+    font-family: "JetBrains Mono", "Font Awesome 6 Free", sans-serif;
+    font-size: 13px;
+    min-height: 0;
+}
+
+window#waybar {
+    background: rgba(30, 30, 46, 0.7);  /* glassy */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 0 12px 12px;
+    color: #cdd6f4;
+}
+
+.modules-left, .modules-center, .modules-right {
+    padding: 0 10px;
+}
+
+#workspaces button {
+    background: transparent;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 8px;
+    padding: 0 8px;
+    margin: 4px 2px;
+}
+
+#workspaces button.active {
+    background: rgba(137, 180, 250, 0.3);
+    color: #89b4fa;
+}
+
+#workspaces button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#clock, #pulseaudio, #network, #battery, #tray {
+    padding: 0 8px;
+    margin: 0 4px;
+}
