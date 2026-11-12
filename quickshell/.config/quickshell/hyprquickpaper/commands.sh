@@ -13,6 +13,8 @@ WALLPAPER="$1"
 [ -f "$WALLPAPER" ] || { echo "no wallpaper: $WALLPAPER" >&2; exit 1; }
 
 awww img "$WALLPAPER" -t grow --transition-duration 1
+# hyprlock.conf's background path points here, so the lock screen follows the wallpaper.
+ln -sf "$WALLPAPER" "$HOME/.cache/current-wallpaper-hyprlock"
 
 echo "$WALLPAPER" > "$HOME/.cache/current-wallpaper"
 

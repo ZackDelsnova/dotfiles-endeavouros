@@ -30,7 +30,10 @@ find "$wallpaper_path" -type f \( \
     echo "Generating thumbnail for $filename"
 
 
-    convert "$img" -thumbnail x500 -strip -quality 85 "$out" &
+    # Tiles are 500px tall and cropped (PreserveAspectCrop), so thumbs need >= 500px height.
+    # x1000> = 2x headroom for sharpness; '>' only shrinks, never upscales small sources.
+    # `magick` replaces the IM6 `convert` alias (deprecated in ImageMagick 7).
+    magick "$img" -thumbnail 'x1000>' -strip -quality 90 "$out" &
 
     # Only limit jobs if batch_size > 0
     if (( cache_batch_size > 0 )); then

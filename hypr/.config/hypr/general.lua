@@ -27,7 +27,7 @@ hl.config({
 		},
 
 		blur = {
-			enabled = false,
+			enabled = true,
 			size = 8,
 			passes = 3,
 			new_optimizations = true,
@@ -44,3 +44,17 @@ hl.config({
 		mouse_move_enables_dpms = false,
 	},
 })
+
+-- glass: blur behind translucent layer surfaces.
+-- Namespaces verified with `hyprctl layers` (mako's layer is "notifications", not "mako";
+-- the picker sets WlrLayershell.namespace = "hyprquickpaper" in shell.qml).
+-- ignore_alpha 0.5: pixels below 50% opacity are not blurred, so fully transparent
+-- regions (e.g. gaps between picker cards) don't smear the desktop.
+for _, ns in ipairs({ "waybar", "wofi", "notifications", "hyprquickpaper" }) do
+	hl.layer_rule({
+		name = "glass-" .. ns,
+		match = { namespace = "^" .. ns .. "$" },
+		blur = true,
+		ignore_alpha = 0.5,
+	})
+end

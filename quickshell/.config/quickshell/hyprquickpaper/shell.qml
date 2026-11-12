@@ -18,6 +18,7 @@ PanelWindow {
     exclusionMode: "Ignore"
     exclusiveZone: 1
 
+    WlrLayershell.namespace: "hyprquickpaper" // layer name Hyprland sees (default: "quickshell"); targeted by the blur layer rule in general.lua
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     Component.onCompleted: {
@@ -45,25 +46,104 @@ PanelWindow {
         showDirs: false
         nameFilters: ["*.png","*.jpg"]
         sortField: FolderListModel.Name
+        onStatusChanged: if (status === FolderListModel.Ready) list.selectCurrentWallpaper()
     }
 
-    ListView {
+    // Last applied wallpaper (full path, written by commands.sh) -> initial selection.
+    FileView {
+        id: currentWallpaperFile
+        path: Quickshell.env("HOME") + "/.cache/current-wallpaper"
+        onLoaded: list.selectCurrentWallpaper()
+    }
+
+    // Looping carousel (replaces the ListView). A Repeater creates 3*N card slots; slot v shows
+    // wallpaper v % N. The selected slot is always centered and cards slide by animating `pos`.
+    // Before each move, virtualIndex/pos are pulled back into the middle third (+/- N) with no
+    // animation; the strip repeats every N slots, so that shift is invisible.
+    // Each card is drawn at the nearest repeat of its offset (wrapping at +/-1.5N, far off-screen),
+    // so the strip is complete for ANY pos -- no gaps at the ends of a jump, even mid-slide.
+    // All 3N cards live for the whole session: sliding never re-creates a card or reloads an image.
+    // (Cards are placed by explicit x, so no Row: Row would override x.)
+    Item {
         id: list
         anchors.fill: parent
         focus: true
-
-        model: folderModel
-        orientation: ListView.Horizontal
-        spacing: 4
         clip: true
-        // reuseItems: true
-        cacheBuffer: width * 2
 
-        property int selectedIndex: 0
+        readonly property int count: folderModel.count
+        readonly property int spacing: 4
         property real tileWidth: width / configs.number_of_pictures - 10
+        readonly property real step: tileWidth + spacing
 
-        function clampIndex(i) {
-            return Math.max(0, Math.min(i, count - 1))
+        // 0 until selectCurrentWallpaper() finds the current wallpaper in the folder.
+        property int selectedIndex: 0
+        property int virtualIndex: 0 // target slot; kept in [count, 2*count) between moves
+        property real pos: 0         // animated slot shown at screen center
+        property real wheelAccum: 0
+
+        // Same 100 ms slide as before. velocity -1: pos is in slot units, so the default
+        // velocity (200/s) would otherwise win over duration and make slides near-instant.
+        SmoothedAnimation {
+            id: anim
+            target: list
+            property: "pos"
+            property int v: 10
+            velocity: -1
+            duration: 100
+        }
+        Component.onCompleted: {
+            anim.v = main.speed
+        }
+
+        // Wrap-around index. Double modulo: JS % keeps the sign, and |delta| can exceed
+        // count (D/U jump by number_of_pictures), so (i + count) % count is not enough.
+        function wrapIndex(i) {
+            if (count === 0) return 0
+            return ((i % count) + count) % count
+        }
+
+        // Center wallpaper i instantly (no slide), in the middle third.
+        function jumpTo(i) {
+            anim.stop()
+            virtualIndex = count + wrapIndex(i)
+            pos = virtualIndex
+            selectedIndex = wrapIndex(i)
+        }
+        onCountChanged: jumpTo(selectedIndex)
+
+        // Horizontal carousel: delta < 0 moves the selection LEFT, delta > 0 moves it RIGHT.
+        function moveSelection(delta) {
+            if (count === 0) return
+            if (Math.abs(delta) >= count) delta = delta % count // a full loop changes nothing
+            anim.v = main.speed * Math.abs(delta)
+            anim.stop()
+            const k = Math.floor(virtualIndex / count) - 1 // thirds away from the middle
+            if (k !== 0) {
+                virtualIndex -= k * count
+                pos -= k * count
+            }
+            virtualIndex += delta
+            // Cap how far pos may trail the target (rapid key repeat): whole-N shifts only, so
+            // it's invisible, and a slide never spins more than one loop.
+            while (virtualIndex - pos > count) pos += count
+            while (pos - virtualIndex > count) pos -= count
+            selectedIndex = wrapIndex(virtualIndex)
+            anim.to = virtualIndex
+            anim.start()
+        }
+
+        // Runs when the folder listing is ready AND when the cache file loads (either order).
+        // No-op until both are available; leaves selection at 0 if no match.
+        function selectCurrentWallpaper() {
+            if (folderModel.status !== FolderListModel.Ready) return
+            const name = currentWallpaperFile.text().trim().split("/").pop()
+            if (!name) return
+            for (let i = 0; i < folderModel.count; i++) {
+                if (folderModel.get(i, "fileName") === name) {
+                    jumpTo(i)
+                    return
+                }
+            }
         }
 
         function activateCurrent() {
@@ -72,136 +152,110 @@ PanelWindow {
             Qt.quit()
         }
 
-        function clampX(x) {
-            return Math.max(0, Math.min(x, contentWidth - width))
-        }
+        Repeater {
+            model: list.count * 3
 
-        function ensureVisibleAnimated(i) {
-            const step = tileWidth + spacing
-            const itemStart = i * step
-            const itemEnd = itemStart + tileWidth + 20
+            delegate: Item {
+                id: card
+                required property int index
+                readonly property string fileName:
+                    list.count > 0 ? folderModel.get(index % list.count, "fileName") : ""
+                property bool active: index === list.virtualIndex
 
-            if (itemStart < contentX)
-                contentX = clampX(itemStart)
-            else if (itemEnd > contentX + width)
-                contentX = clampX(itemStart - (width - step))
-        }
-
-        Behavior on contentX {
-            SmoothedAnimation {
-                id: anim
-                property int v: 10
-                // velocity: v
-                duration: 100
-            }
-        }
-        Component.onCompleted:{
-            anim.v = main.speed
-        }
-
-
-        delegate: Item {
-            property bool active: index === list.selectedIndex
-            width: list.tileWidth
-            // width: active? 1000:list.tileWidth
-            height: 500
-            // visible: shownNow
-            Behavior on width{
-                NumberAnimation {
-                    duration: 50
-                    easing.type: Easing.OutCubic
+                // offset from center in slots, wrapped into [-1.5N, 1.5N] (period 3N)
+                readonly property real offset: {
+                    const d = index - list.pos
+                    const period = list.count * 3
+                    return period > 0 ? d - period * Math.round(d / period) : d
                 }
-            }
-            // anchors.centerIn: parent
-
-
-            // property bool shownNow:
-            //     index >= list.selectedIndex - configs.number_of_pictures &&
-            //     index <= list.selectedIndex + configs.number_of_pictures
-
-            Text{
-                id: alt
-                text: "Loading..."
-                color: Colors.primary // was configs.border_color
-                anchors.centerIn: parent
-                font.pixelSize: 16
-                transform: Shear { xFactor: -0.25 }
-            }
-            Image {
-                id: img
-                anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
-
-                asynchronous: true
-                cache: false
-                smooth: true
-
-                source: "file://" + configs.cache_path + fileName
-
-                // kind of an on-demand loading
-                // source: shownNow
-                //     ? "file://" + configs.cache_path + fileName
-                //     : ""
-
-                sourceSize.width: width
-                sourceSize.height: height
-
-                transform: Shear { xFactor: -0.25 }
-
-                Timer {
-                    id: retryTimer
-                    interval: 1000
-                    repeat: false
-                    onTriggered: {
-                        let s = img.source
-                        img.source = ""
-                        img.source = s
-                    }
-                }
-
-                onStatusChanged: {
-                    if (status === Image.Error) {
-                        alt.text = "Caching"
-                        retryTimer.start()
-                    }
-                }
-            }
-            Rectangle {
-                id: border
-                z: 10
-                visible: parent.active
+                x: list.width / 2 - list.tileWidth / 2 + offset * list.step
+                visible: x + width > -list.step && x < list.width + list.step // skip off-screen slots
                 width: list.tileWidth
+                // width: active? 1000:list.tileWidth
                 height: 500
-                color: "transparent"
-
-                border.width: 4
-                border.color: Colors.primary // was configs.border_color
-
-                transform: Shear { xFactor: -0.25 }
-
-                // x: list.selectedIndex * (width + list.spacing) - list.contentX
-
-                // Behavior on x {
-                //     NumberAnimation {
-                //         duration: 160
-                //         easing.type: Easing.OutCubic
-                //     }
-                // }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-
-                onClicked: {
-                    list.selectedIndex = index
-                    list.activateCurrent()
+                Behavior on width{
+                    NumberAnimation {
+                        duration: 50
+                        easing.type: Easing.OutCubic
+                    }
                 }
 
-                onWheel: function(wheel) {
-                    list.contentX = list.clampX(
-                        list.contentX - wheel.angleDelta.y * 2
-                    )
-                    wheel.accepted = false
+                Text{
+                    id: alt
+                    text: "Loading..."
+                    color: Colors.primary // was configs.border_color
+                    anchors.centerIn: parent
+                    font.pixelSize: 16
+                    transform: Shear { xFactor: -0.25 }
+                }
+                Image {
+                    id: img
+                    anchors.fill: parent
+                    fillMode: Image.PreserveAspectCrop
+
+                    asynchronous: true
+                    cache: false
+                    smooth: true
+                    mipmap: true // higher-quality minification when the thumb is larger than the tile
+
+                    source: "file://" + configs.cache_path + card.fileName
+
+                    sourceSize.width: width
+                    sourceSize.height: height
+
+                    transform: Shear { xFactor: -0.25 }
+
+                    Timer {
+                        id: retryTimer
+                        interval: 1000
+                        repeat: false
+                        onTriggered: {
+                            let s = img.source
+                            img.source = ""
+                            img.source = s
+                        }
+                    }
+
+                    onStatusChanged: {
+                        if (status === Image.Error) {
+                            alt.text = "Caching"
+                            retryTimer.start()
+                        }
+                    }
+                }
+                Rectangle {
+                    id: border
+                    z: 10
+                    visible: card.active
+                    width: list.tileWidth
+                    height: 500
+                    color: "transparent"
+
+                    border.width: 4
+                    border.color: Colors.primary // was configs.border_color
+
+                    transform: Shear { xFactor: -0.25 }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: {
+                        list.selectedIndex = card.index % list.count
+                        list.activateCurrent()
+                    }
+
+                    // No Flickable any more: the wheel moves the selection, one card per notch
+                    // (120 units; accumulated so touchpads don't skip).
+                    onWheel: function(wheel) {
+                        list.wheelAccum += wheel.angleDelta.y
+                        while (Math.abs(list.wheelAccum) >= 120) {
+                            const d = list.wheelAccum > 0 ? -1 : 1 // wheel up = left, as before
+                            list.moveSelection(d)
+                            list.wheelAccum += d * 120
+                        }
+                        wheel.accepted = true
+                    }
                 }
             }
         }
@@ -211,24 +265,16 @@ PanelWindow {
             const big = configs.number_of_pictures
 
             if (event.key === Qt.Key_J) {
-                anim.v = main.speed
-                selectedIndex = clampIndex(selectedIndex + step)
-                ensureVisibleAnimated(selectedIndex)
+                moveSelection(-step) // j = left
 
             } else if (event.key === Qt.Key_K) {
-                anim.v = main.speed
-                selectedIndex = clampIndex(selectedIndex - step)
-                ensureVisibleAnimated(selectedIndex)
+                moveSelection(step) // k = right
+
+            } else if (event.key === Qt.Key_A) {
+                moveSelection(-big) // a = page left (replaces u), wraps
 
             } else if (event.key === Qt.Key_D) {
-                anim.v = main.speed * big
-                selectedIndex = clampIndex(selectedIndex + big)
-                ensureVisibleAnimated(selectedIndex)
-
-            } else if (event.key === Qt.Key_U) {
-                anim.v = main.speed * big
-                selectedIndex = clampIndex(selectedIndex - big)
-                ensureVisibleAnimated(selectedIndex)
+                moveSelection(big) // d = page right, wraps
 
             } else if (event.key === Qt.Key_Space || event.key === Qt.Key_Return) {
                 activateCurrent()
@@ -238,6 +284,17 @@ PanelWindow {
 
             } else return
 
+            event.accepted = true
+        }
+
+        // Arrow keys: same actions as j/k.
+        // (onPressed above leaves arrows unaccepted, so these handlers run.)
+        Keys.onLeftPressed: function(event) {
+            moveSelection(-1)
+            event.accepted = true
+        }
+        Keys.onRightPressed: function(event) {
+            moveSelection(1)
             event.accepted = true
         }
     }

@@ -22,6 +22,13 @@ require("rules")
 
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 hl.on("hyprland.start", function()
+	-- theme bootstrap: generates matugen colors from fallback-wallpaper.jpg on a fresh clone
+	-- (no-op once colors.lua exists). Kept BEFORE mako/waybar; see the script for the race note.
+	hl.exec_cmd("~/.dotfiles/scripts/bootstrap-theme.sh")
+
+	-- idle daemon: lock at 10 min, screen off at 11 min (hypridle.conf). No suspend.
+	hl.exec_cmd("hypridle")
+
 	-- notification daemon
 	hl.exec_cmd("mako")
 
