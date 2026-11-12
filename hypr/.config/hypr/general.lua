@@ -46,11 +46,12 @@ hl.config({
 })
 
 -- glass: blur behind translucent layer surfaces.
--- Namespaces verified with `hyprctl layers` (mako's layer is "notifications", not "mako";
--- the picker sets WlrLayershell.namespace = "hyprquickpaper" in shell.qml).
+-- Namespaces verified with `hyprctl layers` (mako's layer is "notifications", not "mako").
 -- ignore_alpha 0.5: pixels below 50% opacity are not blurred, so fully transparent
--- regions (e.g. gaps between picker cards) don't smear the desktop.
-for _, ns in ipairs({ "waybar", "wofi", "notifications", "hyprquickpaper" }) do
+-- regions don't smear what's behind them.
+-- The wallpaper picker ("hyprquickpaper") is deliberately NOT glassy: its cards float over
+-- whatever is behind them, with no backdrop to compete with the previews.
+for _, ns in ipairs({ "waybar", "wofi", "notifications" }) do
 	hl.layer_rule({
 		name = "glass-" .. ns,
 		match = { namespace = "^" .. ns .. "$" },

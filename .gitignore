@@ -49,7 +49,7 @@ test/
 hypr/.config/hypr/colors.lua
 hypr/.config/hypr/hyprlock-colors.conf
 waybar/.config/waybar/colors.css
-wofi/.config/wofi/colors.css
+wofi/.config/wofi/colors
 kitty/.config/kitty/colors.conf
 mako/.config/mako/colors.conf
 quickshell/.config/quickshell/hyprquickpaper/theme/Colors.qml

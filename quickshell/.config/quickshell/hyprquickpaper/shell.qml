@@ -18,7 +18,7 @@ PanelWindow {
     exclusionMode: "Ignore"
     exclusiveZone: 1
 
-    WlrLayershell.namespace: "hyprquickpaper" // layer name Hyprland sees (default: "quickshell"); targeted by the blur layer rule in general.lua
+    WlrLayershell.namespace: "hyprquickpaper" // stable layer name for Hyprland layer rules (default: "quickshell")
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     Component.onCompleted: {

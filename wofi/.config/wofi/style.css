@@ -1,5 +1,13 @@
-/* matugen-generated palette (@primary, @on_surface, ...) */
-@import url("colors.css");
+/* Colors come from wofi's native colors file, not CSS @import.
+ * wofi is launched with cwd=/ and hands GTK this stylesheet as in-memory data, so
+ * @import url("colors.css") resolves to /colors.css and fails (every @color undefined).
+ * We use wofi's native `colors=colors` config instead (./config -> ~/.config/wofi/colors,
+ * rendered by matugen). wofi substitutes these macros before GTK parses the CSS:
+ *   --wofi-color<n> -> #RRGGBB      --wofi-rgb-color<n> -> R, G, B      (n = line - 1)
+ *   0 = surface_container    1 = on_surface    2 = primary
+ * Waybar loads its CSS from the file path, so it keeps @import + alpha().
+ * Alpha 0.92 (vs waybar's 0.75) because wofi is a large window: same glass family,
+ * different surface size. */
 
 * {
     font-family: "JetBrains Mono", sans-serif;
@@ -8,14 +16,14 @@
 window {
     margin: 0px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: rgba(30, 30, 46, 0.85);
+    background-color: rgba(--wofi-rgb-color0, 0.92); /* glassy: blurred by Hyprland layer rule */
     border-radius: 16px;
 }
 
 #input {
     margin: 12px;
     border: none;
-    color: @on_surface;
+    color: --wofi-color1;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 8px;
@@ -34,7 +42,7 @@ window {
 }
 
 #text {
-    color: @on_surface;
+    color: --wofi-color1;
 }
 
 #entry {
@@ -43,7 +51,7 @@ window {
 }
 
 #entry:selected {
-    background-color: alpha(@primary, 0.3);
+    background-color: rgba(--wofi-rgb-color2, 0.3);
 }
 
 #img {

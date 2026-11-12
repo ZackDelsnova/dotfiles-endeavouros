@@ -17,8 +17,9 @@ input_path = '~/.config/matugen/templates/waybar.css.template'
 output_path = '~/.config/waybar/colors.css'
 
 [templates.wofi-colors]
-input_path = '~/.config/matugen/templates/wofi.css.template'
-output_path = '~/.config/wofi/colors.css'
+# wofi's native colors file (plain hex lines; see wofi/style.css header for why not CSS)
+input_path = '~/.config/matugen/templates/wofi-colors.template'
+output_path = '~/.config/wofi/colors'
 
 [templates.kitty-colors]
 input_path = '~/.config/matugen/templates/kitty.conf.template'
