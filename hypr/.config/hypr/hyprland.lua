@@ -17,16 +17,19 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("mako")
 
 	-- wallpaper setter, hyprpaper and awww
-	hl.exec_cmd("hyprpaper &")
+	hl.exec_cmd("hyprpaper")
 
 	-- status bars
-	hl.exec_cmd("waybar &")
+	hl.exec_cmd("waybar")
 
 	-- network manager
-	hl.exec_cmd("nm-applet &")
+	hl.exec_cmd("nm-applet")
 
 	-- bluetooth
-	hl.exec_cmd("blueman-applet &")
+	hl.exec_cmd("blueman-applet")
+
+	--wallpaper
+	hl.exec_cmd("awww-daemon")
 end)
 
 -------------------------------

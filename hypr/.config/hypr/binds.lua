@@ -2,6 +2,31 @@
 
 local mod = "SUPER" -- windows main modifier
 
+-- screenshot and recordin stuffs
+local screenshotDir = os.getenv("HOME") .. "/Pictures/Screenshots"
+local recordingDir = os.getenv("HOME") .. "/Videos/Screenrecording"
+
+hl.env("HYPRSHOT_DIR", screenshotDir)
+
+local fullScreenSS = "hyprshot -m output -z"
+local windowSS = "hyprshot -m window -z"
+local areaSS = "hyprshot -m region -z"
+
+local toggleRecording = string.format(
+	"if pgrep -x wf-recorder >/dev/null; then "
+		.. "  pkill -INT -x wf-recorder; "
+		.. "  notify-send 'Screen Recorder' 'Recording stopped and saved successfully' -i video-x-generic; "
+		.. "else "
+		.. "  mkdir -p '%s' && "
+		.. "  notify-send 'Screen Recorder' 'Select an area to start recording...' -i video-x-generic; "
+		.. '  wf-recorder --audio -g "$(slurp)" '
+		.. "  -f '%s/recording-$(date +%%Y-%%m-%%d_%%H-%%M-%%S).mp4'; && "
+		.. "  notify-send 'Screen Recorder' 'Recording started' -i video-x-generic; "
+		.. "fi",
+	recordingDir,
+	recordingDir
+)
+
 -- closing
 hl.bind(mod .. " + Q", hl.dsp.window.close())
 hl.bind(mod .. " + SHIFT + Q", hl.dsp.window.kill())
@@ -14,11 +39,28 @@ hl.bind(
 -- lock
 hl.bind(mod .. " + N", hl.dsp.exec_cmd("hyprlock"), { release = true }) -- SUPER+L locks
 
+-- wallpaper
+hl.bind(mod .. " + W", hl.dsp.exec_cmd("quickshell -c hyprquickpaper"))
+
 -- apps
 hl.bind(mod .. " + Return", hl.dsp.exec_cmd("kitty"))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd("thunar"))
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exec_cmd("kitty yazi"))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd("pkill wofi || wofi --show drun"), { release = true })
+
+-- screenshot and recordin
+hl.bind(mod .. " + S", hl.dsp.exec_cmd(fullScreenSS))
+hl.bind("" .. "Print", hl.dsp.exec_cmd(fullScreenSS))
+
+-- Frozen area screenshot (SUPER + SHIFT + S or SHIFT + Print)
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd(areaSS))
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd(areaSS))
+
+-- Optional: Active Window screenshot (SUPER + ALT + S)
+hl.bind(mod .. " + ALT + S", hl.dsp.exec_cmd(windowSS))
+
+-- Toggle recording (SUPER + ALT + R)
+hl.bind(mod .. " + ALT + R", hl.dsp.exec_cmd("sh -c '" .. toggleRecording .. "'"))
 
 -- split (dwindle only)
 hl.bind(mod .. " + P", hl.dsp.layout("togglesplit"))
