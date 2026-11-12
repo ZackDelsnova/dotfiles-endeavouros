@@ -39,7 +39,7 @@ check_hypr "mako"
 pkill -SIGUSR1 -x kitty || true
 check_hypr "kitty"
 
-# Wofi: no-op. It reads style.css (and colors.css) every time it opens.
+# Wofi: no-op. It reads its native colors file (config: colors=colors) every time it opens.
 # Hyprlock: no-op. It reads hyprlock.conf (and hyprlock-colors.conf) every time it locks.
 # Quickshell (hyprquickpaper): no-op. The picker calls Qt.quit() right after launching
 #   commands.sh, so it loads theme/Colors.qml fresh on next open. `qs kill` is deliberately

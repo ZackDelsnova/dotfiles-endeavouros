@@ -2,7 +2,7 @@
 @import url("colors.css");
 
 * {
-    font-family: "JetBrains Mono", "Font Awesome 6 Free", sans-serif;
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
     font-size: 13px;
     min-height: 0;
 }

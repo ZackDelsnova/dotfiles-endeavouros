@@ -44,7 +44,7 @@ PanelWindow {
         id: folderModel
         folder: "file://" + configs.wallpaper_path
         showDirs: false
-        nameFilters: ["*.png","*.jpg"]
+        nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.avif", "*.PNG", "*.JPG", "*.JPEG", "*.WEBP"]
         sortField: FolderListModel.Name
         onStatusChanged: if (status === FolderListModel.Ready) list.selectCurrentWallpaper()
     }

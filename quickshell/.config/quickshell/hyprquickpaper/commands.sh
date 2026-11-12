@@ -1,6 +1,6 @@
 #!/bin/bash
-# Wallpaper → theme pipeline. Called by shell.qml (detached) with the selected wallpaper path,
-# and by ~/.dotfiles/scripts/apply-last-theme.sh at login.
+# Wallpaper → theme pipeline. Called by shell.qml (detached) with the selected wallpaper path.
+# Can also be run manually: commands.sh <wallpaper-path>
 set -e
 
 # Log everything (this script runs detached from Quickshell, so errors are otherwise invisible).

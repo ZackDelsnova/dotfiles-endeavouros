@@ -12,16 +12,20 @@ local fullScreenSS = "hyprshot -m output -z"
 local windowSS = "hyprshot -m window -z"
 local areaSS = "hyprshot -m region -z"
 
+-- exec_cmd already runs through a shell, so no `sh -c` wrapper (its single quotes broke the
+-- inner notify-send quoting). wf-recorder blocks until stopped, so it is backgrounded and the
+-- "started" notification fires right away. Cancelling slurp (Esc) aborts without recording.
 local toggleRecording = string.format(
 	"if pgrep -x wf-recorder >/dev/null; then "
-		.. "  pkill -INT -x wf-recorder; "
-		.. "  notify-send 'Screen Recorder' 'Recording stopped and saved successfully' -i video-x-generic; "
+		.. "pkill -INT -x wf-recorder; "
+		.. "notify-send 'Screen Recorder' 'Recording stopped and saved successfully' -i video-x-generic; "
 		.. "else "
-		.. "  mkdir -p '%s' && "
-		.. "  notify-send 'Screen Recorder' 'Select an area to start recording...' -i video-x-generic; "
-		.. '  wf-recorder --audio -g "$(slurp)" '
-		.. "  -f '%s/recording-$(date +%%Y-%%m-%%d_%%H-%%M-%%S).mp4'; && "
-		.. "  notify-send 'Screen Recorder' 'Recording started' -i video-x-generic; "
+		.. "mkdir -p '%s' && "
+		.. "notify-send 'Screen Recorder' 'Select an area to start recording...' -i video-x-generic && "
+		.. 'geom="$(slurp)" && '
+		.. '{ wf-recorder --audio -g "$geom" '
+		.. '-f "%s/recording-$(date +%%Y-%%m-%%d_%%H-%%M-%%S).mp4" & } && '
+		.. "notify-send 'Screen Recorder' 'Recording started' -i video-x-generic; "
 		.. "fi",
 	recordingDir,
 	recordingDir
@@ -37,7 +41,7 @@ hl.bind(
 )
 
 -- lock
-hl.bind(mod .. " + N", hl.dsp.exec_cmd("hyprlock"), { release = true }) -- SUPER+L locks
+hl.bind(mod .. " + N", hl.dsp.exec_cmd("hyprlock"), { release = true }) -- SUPER+N locks (SUPER+L is focus right)
 
 -- wallpaper
 hl.bind(mod .. " + W", hl.dsp.exec_cmd("quickshell -c hyprquickpaper"))
@@ -60,7 +64,7 @@ hl.bind("SHIFT + Print", hl.dsp.exec_cmd(areaSS))
 hl.bind(mod .. " + ALT + S", hl.dsp.exec_cmd(windowSS))
 
 -- Toggle recording (SUPER + ALT + R)
-hl.bind(mod .. " + ALT + R", hl.dsp.exec_cmd("sh -c '" .. toggleRecording .. "'"))
+hl.bind(mod .. " + ALT + R", hl.dsp.exec_cmd(toggleRecording))
 
 -- split (dwindle only)
 hl.bind(mod .. " + P", hl.dsp.layout("togglesplit"))

@@ -32,9 +32,6 @@ hl.on("hyprland.start", function()
 	-- notification daemon
 	hl.exec_cmd("mako")
 
-	-- wallpaper setter, hyprpaper and awww
-	hl.exec_cmd("hyprpaper")
-
 	-- status bars
 	hl.exec_cmd("waybar")
 

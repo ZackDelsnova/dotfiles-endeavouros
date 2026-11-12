@@ -31,7 +31,7 @@
     },
     "network": {
         "format-wifi": " {essid}",
-        "format-ethernet": " {ifname}",
+        "format-ethernet": "󰈀 {ifname}",
         "format-disconnected": "⚠ Disconnected"
     },
     "battery": {
