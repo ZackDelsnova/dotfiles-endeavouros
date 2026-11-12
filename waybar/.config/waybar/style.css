@@ -1,3 +1,6 @@
+/* matugen-generated palette (@primary, @on_surface, ...) */
+@import url("colors.css");
+
 * {
     font-family: "JetBrains Mono", "Font Awesome 6 Free", sans-serif;
     font-size: 13px;
@@ -8,7 +11,7 @@ window#waybar {
     background: rgba(30, 30, 46, 0.7);  /* glassy */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0 0 12px 12px;
-    color: #cdd6f4;
+    color: @on_surface;
 }
 
 .modules-left, .modules-center, .modules-right {
@@ -17,7 +20,7 @@ window#waybar {
 
 #workspaces button {
     background: transparent;
-    color: #cdd6f4;
+    color: @on_surface;
     border: none;
     border-radius: 8px;
     padding: 0 8px;
@@ -25,8 +28,8 @@ window#waybar {
 }
 
 #workspaces button.active {
-    background: rgba(137, 180, 250, 0.3);
-    color: #89b4fa;
+    background: alpha(@primary, 0.3);
+    color: @primary;
 }
 
 #workspaces button:hover {

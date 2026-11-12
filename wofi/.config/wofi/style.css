@@ -1,3 +1,6 @@
+/* matugen-generated palette (@primary, @on_surface, ...) */
+@import url("colors.css");
+
 * {
     font-family: "JetBrains Mono", sans-serif;
 }
@@ -7,13 +10,12 @@ window {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background-color: rgba(30, 30, 46, 0.85);
     border-radius: 16px;
-    backdrop-filter: blur(12px);
 }
 
 #input {
     margin: 12px;
     border: none;
-    color: #cdd6f4;
+    color: @on_surface;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 8px;
@@ -32,7 +34,7 @@ window {
 }
 
 #text {
-    color: #cdd6f4;
+    color: @on_surface;
 }
 
 #entry {
@@ -41,7 +43,7 @@ window {
 }
 
 #entry:selected {
-    background-color: rgba(137, 180, 250, 0.3);
+    background-color: alpha(@primary, 0.3);
 }
 
 #img {

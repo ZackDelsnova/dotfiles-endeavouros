@@ -6,8 +6,8 @@ hl.config({
 		gaps_out = 20,
 		border_size = 1,
 		col = {
-			active_border = "rgba(ffffff33)",
-			inactive_border = "rgba(ffffff11)",
+			active_border = colors.active_border, -- was "rgba(ffffff33)"; set by hyprland.lua
+			inactive_border = colors.inactive_border, -- was "rgba(ffffff11)"
 		},
 		layout = "dwindle",
 		allow_tearing = true,
@@ -22,7 +22,7 @@ hl.config({
 			enabled = true,
 			range = 15,
 			render_power = 3,
-			color = "rgba(00000044)",
+			color = colors.shadow, -- was "rgba(00000044)"
 			offset = { 0, 0 },
 		},
 

@@ -1,5 +1,14 @@
 -- hyprland configs
 
+-- colors: dofile (not require) so `hyprctl reload` re-reads the matugen-generated file.
+-- Falls back to the committed Catppuccin Mocha palette when colors.lua is missing or broken.
+-- `colors` is intentionally GLOBAL so require()'d modules (general.lua) can read it.
+local colors_ok
+colors_ok, colors = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/colors.lua")
+if not colors_ok or not colors then
+	colors = dofile(os.getenv("HOME") .. "/.config/hypr/colors.fallback.lua")
+end
+
 require("monitors")
 require("binds")
 require("general")

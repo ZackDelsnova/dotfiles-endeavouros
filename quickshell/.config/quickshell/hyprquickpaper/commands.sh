@@ -1,17 +1,23 @@
 #!/bin/bash
+# Wallpaper → theme pipeline. Called by shell.qml (detached) with the selected wallpaper path,
+# and by ~/.dotfiles/scripts/apply-last-theme.sh at login.
+set -e
+
+# Log everything (this script runs detached from Quickshell, so errors are otherwise invisible).
+# tee keeps output on the terminal for manual runs too.
+mkdir -p "$HOME/.cache"
+exec > >(tee -a "$HOME/.cache/hyprquickpaper.log") 2>&1
+echo "=== $(date '+%F %T') commands.sh $*"
 
 WALLPAPER="$1"
-CACHE_DIR="$HOME/.cache/matugen"
+[ -f "$WALLPAPER" ] || { echo "no wallpaper: $WALLPAPER" >&2; exit 1; }
 
 awww img "$WALLPAPER" -t grow --transition-duration 1
 
-matugen image "$WALLPAPER" --type auto
+echo "$WALLPAPER" > "$HOME/.cache/current-wallpaper"
 
-if [ -f "$CACHE_DIR/colors.json" ]; then
-  PRIMARY=$(jq -r '.palette.primary' "$CACHE_DIR/colors.json")
-  SECONDARY=$(jq -r '.palette.secondary' "$CACHE_DIR/colors.json")
-  SURFACE=$(jq -r '.palette.surface' "$CACHE_DIR/colors.json")
+# matugen 4.x: `--type auto` is invalid; --source-color-index 0 prevents an interactive
+# source-color prompt that would hang this detached script.
+matugen image "$WALLPAPER" -m dark --source-color-index 0
 
-  hyprctl keyword general:col.active_border "$PRIMARY"
-  hyprctl keyword general:col.inactive_border "$SECONDARY"
-fi
+"$HOME/.dotfiles/scripts/theme-reload.sh"

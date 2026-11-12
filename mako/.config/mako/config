@@ -1,0 +1,2 @@
+# matugen-generated colors (mako requires an absolute or ~/ path)
+include=~/.config/mako/colors.conf

@@ -1,0 +1,33 @@
+# matugen 4.2.0 config
+# Outputs land inside ~/.dotfiles via stow-folded dir symlinks; all outputs are gitignored.
+# No post_hook: reloads are driven by ~/.dotfiles/scripts/theme-reload.sh (called from commands.sh).
+
+[config]
+
+[templates.hypr-colors]
+input_path = '~/.config/matugen/templates/hyprland.lua.template'
+output_path = '~/.config/hypr/colors.lua'
+
+[templates.hyprlock-colors]
+input_path = '~/.config/matugen/templates/hyprlock.conf.template'
+output_path = '~/.config/hypr/hyprlock-colors.conf'
+
+[templates.waybar-colors]
+input_path = '~/.config/matugen/templates/waybar.css.template'
+output_path = '~/.config/waybar/colors.css'
+
+[templates.wofi-colors]
+input_path = '~/.config/matugen/templates/wofi.css.template'
+output_path = '~/.config/wofi/colors.css'
+
+[templates.kitty-colors]
+input_path = '~/.config/matugen/templates/kitty.conf.template'
+output_path = '~/.config/kitty/colors.conf'
+
+[templates.mako-colors]
+input_path = '~/.config/matugen/templates/mako.conf.template'
+output_path = '~/.config/mako/colors.conf'
+
+[templates.quickshell-colors]
+input_path = '~/.config/matugen/templates/Colors.qml.template'
+output_path = '~/.config/quickshell/hyprquickpaper/theme/Colors.qml'
