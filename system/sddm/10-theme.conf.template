@@ -1,0 +1,5 @@
+# Drop-in for /etc/sddm.conf.d/10-theme.conf
+# Documentation only — install-sddm-theme.sh writes the real file with the
+# theme directory name it detects in the qylock repo.
+[Theme]
+Current=qylock-star-rail

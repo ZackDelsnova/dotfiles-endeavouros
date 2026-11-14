@@ -33,6 +33,10 @@ quickshell/*/qmlcache/
 assets/sddm/
 assets/grub/
 
+# DIN Next is commercially licensed — never commit the font
+system/sddm/font/*.ttf
+system/sddm/font/*.otf
+
 # temp
 temp/
 test/
